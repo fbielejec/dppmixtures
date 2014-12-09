@@ -151,7 +151,7 @@ proposal <- cmpfun(proposal)
 ###############
 #---SAMPLER---#
 ###############
-metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue, mu, alpha, Nsim) {
+metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue, mu, alpha, P, Nsim) {
   
   N <- length(startvalue)
   K <- length(mu)
@@ -192,9 +192,9 @@ N     <- length(x)
 P     <- 1
 alpha <- 0.01
 z     <- rep(1, N)
-mu    <- c(-4,2)
+mu    <- c(-4, 2)
 
-chain = metropolisHastings(loglikelihood, prior, proposal, data = x, startvalue = z, mu, alpha, Nsim)
+chain = metropolisHastings(loglikelihood, prior, proposal, data = x, startvalue = z, mu, alpha, P, Nsim)
 
 z = chain[dim(chain)[1], ]
 
