@@ -35,7 +35,7 @@ loglikelihood <- function(mu, z, P, data) {
   for(i in 1 : length(data)) {
     xi = data[i]
     mui = mu[z[i]]
-    logL = logL + log( dnorm(x = xi, mean = mui, sd = P ) )
+    logL = logL + dnorm(x = xi, mean = mui, sd = P, log = TRUE )
   }
   
   return(logL )
