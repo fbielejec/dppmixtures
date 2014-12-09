@@ -1,6 +1,12 @@
+################
+#---PACKAGES---#
+################
+require(compiler)
+
 ############
 #---DATA---#
 ############
+# data generated from a mixture of two normals 0.5 * N(-4,1) + 0.5 * N(2,1) 
 x <- c(3.2021219417081, 2.65741884298405, 0.780137036066781, 3.64724723765017, 
        2.81041331245526, -4.62984071052694, -3.14281370657829, -3.12319766617262, 
        0.908978440112633, 2.51957106216094, 1.6829613082298, -3.87567468005131, 
@@ -41,16 +47,14 @@ loglikelihood <- function(mu, z, P, data) {
   return(logL )
 }#END: loglikelihood
 
-# loglikelihood(mu, c, P, x)
-
-# loglikelihood(mu = mu, z = r.candidate, P = P, data)
+loglikelihood <- cmpfun(loglikelihood)
 
 #############
 #---PRIOR---#
 #############
 prior <- function(z, K, N, alpha) {
   # prior for cluster assignments
-  # @return: loglikelyhood of an assignmnet z
+  # @return: loglikelyhood of an assignmnent z
   counts = matrix(NA, ncol = K, dimnames = list(NULL, c(1 : K) ) )
   theTable <- table(z)
   
@@ -78,6 +82,7 @@ prior <- function(z, K, N, alpha) {
   return(loglike)
 }#END: prior
 
+prior <- cmpfun(prior)
 
 # prior(z = c(1, 2, 3), K = 3, N = 3, alpha = 1.0 )
 # -log(6)
@@ -86,7 +91,7 @@ prior <- function(z, K, N, alpha) {
 #---PROPOSAL---#
 ################
 proposal <- function(z, K, N) {
-  
+  # random walk (symmetric) proposal
   index = sample( c(1 : N), 1)
   value = sample( c(1 : K), 1 )
   
@@ -97,10 +102,11 @@ proposal <- function(z, K, N) {
   d.curr = 1
   
   return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
-}
+}# END: proposal
 
 proposal <- function(z, K, N, alpha) {
-  
+  # gibbs proposal (algorithm 2 from Neal 2000)
+  # TODO: likelihood
   r.cand = z
   for(index in 1 : N) {
     
@@ -140,7 +146,7 @@ proposal <- function(z, K, N, alpha) {
   return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
 }#END: proposal
 
-
+proposal <- cmpfun(proposal)
 
 ###############
 #---SAMPLER---#
@@ -176,53 +182,35 @@ metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue,
   return(chain)
 }#END: metropolisHastings
 
+metropolisHastings <- cmpfun(metropolisHastings)
+
 ############
 #---MCMC---#
 ############
-Nsim <- 10^3
-N <- length(x)
-P <- 1
+Nsim  <- 10^3
+N     <- length(x)
+P     <- 1
 alpha <- 0.01
-
-z <- rep(1, N)
-mu <- c(-4,2)
+z     <- rep(1, N)
+mu    <- c(-4,2)
 
 chain = metropolisHastings(loglikelihood, prior, proposal, data = x, startvalue = z, mu, alpha, Nsim)
 
-z <- chain[dim(chain)[1], ]
+z = chain[dim(chain)[1], ]
+
 probs = rep(NA, length(mu))
 for(i in 1 : length(probs)) {
-  
   probs[i] = sum(z == i) / N
-  
 }
 
 grid = seq(min(x) - 1, max(x) + 1, length = 500)
 dens = rep(NA, length = length(grid))
 
 for(i in 1 : length(grid)) {
-  
   dens[i] = sum(probs * dnorm(grid[i], mu, P))
-  
 }
 
 hist(x, freq = FALSE)
 lines(grid, dens, col = 'red', lwd = 2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

@@ -1,3 +1,20 @@
-http://xiaodong-yu.blogspot.be/2009/09/gibbs-sampling-for-dp-mixtures.html
-http://blog.echen.me/2012/03/20/infinite-mixture-models-with-nonparametric-bayes-and-the-dirichlet-process/
-http://www.arbylon.net/resources.html
+ LICENSE
+ -------
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <filip.bielejec@rega.kuleuve.be> wrote this software. As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return. Filip Bielejec.
+ * ----------------------------------------------------------------------------
+ */
+
+ PURPOSE
+ -------
+ R code prototype of the gibbs sampler for mixtures of normals in.
+ This is a very bad way to code things in R (explicit loops), yet easily ports to different languages.
+
+ SOME REFERENCES
+ ---------------
+ http://xiaodong-yu.blogspot.be/2009/09/gibbs-sampling-for-dp-mixtures.html
+ http://blog.echen.me/2012/03/20/infinite-mixture-models-with-nonparametric-bayes-and-the-dirichlet-process/
+ http://www.arbylon.net/resources.html
