@@ -2,6 +2,7 @@
 #---PACKAGES---#
 ################
 require(compiler)
+# require(mixtools)
 
 ############
 #---DATA---#
@@ -29,6 +30,8 @@ x <- c(3.2021219417081, 2.65741884298405, 0.780137036066781, 3.64724723765017,
        -3.94392608719873, -3.96057630155318, -3.71448565584273, 0.730529435675807, 
        2.20540388616452, -4.56182609476879)
 
+# x = rnormmix(82, lambda = c(0.5, 0.5), mu = c(-4, 2), sigma = c(1, 1))
+
 ##################
 #---LIKELIHOOD---#
 ##################
@@ -52,9 +55,24 @@ loglikelihood <- cmpfun(loglikelihood)
 #############
 #---PRIOR---#
 #############
-zPrior <- function(z, K, N, alpha) {
+
+muPrior <- function(mu, K, mu0, P0) {
+  # prior for mu parameters (base model)
+  # mu: vector of K unique parameter values
+  # @return: likelihood of mu
+  loglike = 0
+  for(i in 1 : K) {
+    
+    loglike = loglike + dnorm(mu[i], mu0, P0)
+    
+  }#END: i loop
+  
+  return(loglike)
+}#END: muPrior
+
+zPrior <- function(z, K, N, mu, mu0, P0, alpha) {
   # prior for cluster assignments
-  # @return: loglikelyhood of an assignmnent z
+  # @return: loglikelihood of an assignmnent z
   # TODO: likelihood for mu
   counts = matrix(NA, ncol = K, dimnames = list(NULL, c(1 : K) ) )
   theTable <- table(z)
@@ -79,6 +97,8 @@ zPrior <- function(z, K, N, alpha) {
   for(i in 1 : N) {
     loglike = loglike - log(alpha + i - 1)
   }
+  
+  loglike = loglike + muPrior(mu, K, mu0, P0)
   
   return(loglike)
 }#END: prior
@@ -132,22 +152,28 @@ zProposal <- function(z, K, N, mu, P, alpha) {
         
         # sample from prior for mu[i]
         mu.cand = rnorm(1, mu[i], P)
-        # base model likelihood
-        like = dnorm( mu.cand, mu[i], P) 
+        # TODO: this should be the base model likelihood (prior for mu)
+        like = dnorm( mu.cand, mu[i], P, log = T) 
         
-        probs[i] = ( (alpha) / (N - 1 + alpha) ) * like
+        probs[i] = log( (alpha) / (N - 1 + alpha) ) + like
         
       } else {# draw existing
         
         # likelihood for components with observations other than x_i currently associated with them is N(mu_j, P)
-        like = dnorm( x[index], mu[i], P) 
-        probs[i] = ( (occupancy[i]) / (N - 1 + alpha) ) * like
+        like = dnorm( x[index], mu[i], P, log = T) 
+        probs[i] = ( (occupancy[i]) / (N - 1 + alpha) ) + like
         
       }#END: occupation check
       
     }#END: i loop
     
-    # TODO: normalize probs (b in Neal 2000)
+    # rescale to improve accuracy
+#     max = max(probs)
+#     for(i in 1 : K) {
+#       probs[i] = probs[i] - max
+#     }
+#     
+#     # normalize probs (b in Neal 2000)
 #     norm = 0;
 #     for(i in 1 : K) {
 #       norm = norm + probs[i]^2
@@ -157,7 +183,8 @@ zProposal <- function(z, K, N, mu, P, alpha) {
 #     for(i in 1 : K) {
 #       probs[i] = probs[i] / norm 
 #     }
-    
+#     
+    probs = exp(probs)
     
     value = sample(c(1 : K), size = 1, prob = probs)
     r.cand[index] = value
@@ -175,7 +202,7 @@ zProposal <- cmpfun(zProposal)
 ###############
 #---SAMPLER---#
 ###############
-metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue, mu, alpha, P, Nsim) {
+metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue, mu, P, mu0, P0, alpha, Nsim) {
   
   N <- length(startvalue)
   K <- length(mu)
@@ -191,8 +218,8 @@ metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue,
     d.curr = candidate$d.curr
     
     probab = exp(
-      (loglikelihood(mu = mu, z = r.candidate, P = P, data) + zPrior(r.candidate, K, N, alpha) + d.candidate) -
-        (loglikelihood(mu = mu, z = chain[i, ], P = P, data) + zPrior(chain[i, ], K, N, alpha) + d.curr)
+      (loglikelihood(mu = mu, z = r.candidate, P = P, data) + zPrior(r.candidate, K, N, mu, mu0, P0, alpha) + d.candidate) -
+        (loglikelihood(mu = mu, z = chain[i, ], P = P, data) + zPrior(chain[i, ], K, N, mu, mu0, P0, alpha) + d.curr)
     )
     
     if (runif(1) < probab) {
@@ -219,8 +246,10 @@ run <- function() {
   z     <- rep(1, N)
   K     <- 2
   mu    <- c(-4, 2)
+  mu0   <- 0.0 
+  P0    <- 1.0
   
-  chain = metropolisHastings(loglikelihood, prior, proposal, data = x, startvalue = z, mu, alpha, P, Nsim)
+  chain = metropolisHastings(loglikelihood, prior, proposal, data = x, startvalue = z, mu, P, mu0, P0, alpha, Nsim)
   
   z = chain[dim(chain)[1], ]
   
