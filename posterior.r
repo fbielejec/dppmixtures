@@ -318,3 +318,4 @@ run <- function() {
   assign("probs", value = probs, env = .GlobalEnv)
 }
 run()
+kmeans(x, centers = c(-4, 2))$cluster
