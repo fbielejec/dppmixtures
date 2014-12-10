@@ -126,7 +126,7 @@ zProposal <- function(z, K, N, mu, P, alpha) {
       
       if(occupancy[i] == 0) {# draw new
         
-        # TODO: likelihood
+        # TODO: likelihood for unrepresented class: / P(x[index] | mu[i]) * P(mu[i]) dm[i]
         probs[i] = ( (alpha) / (N - 1 + alpha) )
         
       } else {# draw existing
@@ -140,13 +140,24 @@ zProposal <- function(z, K, N, mu, P, alpha) {
     }#END: i loop
     
     # TODO: normalize probs (b in Neal 2000)
+#     norm = 0;
+#     for(i in 1 : K) {
+#       norm = norm + probs[i]^2
+#     }
+#     norm = sqrt( norm )
+#     
+#     for(i in 1 : K) {
+#       probs[i] = probs[i] / norm 
+#     }
+    
     
     value = sample(c(1 : K), size = 1, prob = probs)
     r.cand[index] = value
   }#END: index loop
   
-  d.cand =  0 #zPrior(r.cand, K, N , alpha) + loglikelihood(r.cand, K, N , alpha) 
-  d.curr =  0 #zPrior(z, K, N , alpha) + loglikelihood(z, K, N , alpha) 
+  # on log scale
+  d.cand =  0 
+  d.curr =  0 
   
   return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
 }#END: proposal
@@ -198,6 +209,7 @@ run <- function() {
   P     <- 1
   alpha <- 0.01
   z     <- rep(1, N)
+  K     <- 2
   mu    <- c(-4, 2)
   
   chain = metropolisHastings(loglikelihood, prior, proposal, data = x, startvalue = z, mu, alpha, P, Nsim)
