@@ -124,11 +124,11 @@ proposal <- function(z, K, N, alpha) {
     probs = matrix(NA, ncol = K, dimnames = list(NULL, c(1 : K) ) )
     for(i in 1 : K) {
       
-      if(occupancy[i] == 0) {#draw new
+      if(occupancy[i] == 0) {# draw new
         
         probs[i] = ( (alpha) / (N - 1 + alpha) )
         
-      } else { # draw existing
+      } else {# draw existing
         
         probs[i] = ( (occupancy[i]) / (N - 1 + alpha) )
         
