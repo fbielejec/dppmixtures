@@ -55,6 +55,7 @@ loglikelihood <- cmpfun(loglikelihood)
 zPrior <- function(z, K, N, alpha) {
   # prior for cluster assignments
   # @return: loglikelyhood of an assignmnent z
+  # TODO: likelihood for mu
   counts = matrix(NA, ncol = K, dimnames = list(NULL, c(1 : K) ) )
   theTable <- table(z)
   
@@ -126,8 +127,15 @@ zProposal <- function(z, K, N, mu, P, alpha) {
       
       if(occupancy[i] == 0) {# draw new
         
-        # TODO: likelihood for unrepresented class: / P(x[index] | mu[i]) * P(mu[i]) dm[i]
-        probs[i] = ( (alpha) / (N - 1 + alpha) )
+        # likelihood for unrepresented class: / P(x[index] | mu[i]) * P(mu[i]) dm[i]
+        # M-H for poor people:
+        
+        # sample from prior for mu[i]
+        mu.cand = rnorm(1, mu[i], P)
+        # base model likelihood
+        like = dnorm( mu.cand, mu[i], P) 
+        
+        probs[i] = ( (alpha) / (N - 1 + alpha) ) * like
         
       } else {# draw existing
         
@@ -234,3 +242,4 @@ run <- function() {
   assign("probs", value = probs, env = .GlobalEnv)
 }
 
+run()
