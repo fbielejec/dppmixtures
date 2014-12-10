@@ -155,20 +155,20 @@ zPrior <- function(z, K, N, mu, mu0, P0, alpha) {
 zPrior <- cmpfun(zPrior)
 
 #---PROPOSAL---#
-zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
-  # random walk (symmetric) integer proposal
-  index = sample( c(1 : N), 1)
-  value = sample( c(1 : K), 1 )
-  
-  r.cand = z
-  r.cand[index] = value
-  
-  # on the log scale
-  d.cand = 0
-  d.curr = 0
-  
-  return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
-}# END: proposal
+# zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
+#   # random walk (symmetric) integer proposal
+#   index = sample( c(1 : N), 1)
+#   value = sample( c(1 : K), 1 )
+#   
+#   r.cand = z
+#   r.cand[index] = value
+#   
+#   # on the log scale
+#   d.cand = 0
+#   d.curr = 0
+#   
+#   return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
+# }# END: proposal
 
 zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
   # gibbs proposal (algorithm 2 from Neal 2000)
@@ -279,6 +279,12 @@ metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue,
 
 metropolisHastings <- cmpfun(metropolisHastings)
 
+
+num.mode <- function(x){
+  as.numeric(names(which(table(x)==max(table(x)))))
+}
+
+
 ############
 #---MCMC---#
 ############
@@ -309,10 +315,14 @@ run <- function() {
     dens[i] = sum(probs * dnorm(grid[i], mu, P))
   }
   
+  ### getting the posterior mode of assigments
+  burnin <- 200
+  print(apply(chain[burnin:Nsim,], 2, num.mode))
+  
   hist(x, freq = FALSE)
   lines(grid, dens, col = 'red', lwd = 2)
   
   assign("probs", value = probs, env = .GlobalEnv)
 }
-
 run()
+kmeans(x, centers = c(-4, 2))$cluster
