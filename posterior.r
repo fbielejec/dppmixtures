@@ -1,3 +1,7 @@
+
+# zPrior(z = c(1, 2, 3), K = 3, N = 3, alpha = 1.0 )
+# -log(6)
+
 ################
 #---PACKAGES---#
 ################
@@ -52,10 +56,14 @@ loglikelihood <- function(mu, z, P, data) {
 
 loglikelihood <- cmpfun(loglikelihood)
 
-#############
-#---PRIOR---#
-#############
 
+############
+############
+##---MU---##
+############
+############
+
+#---PRIOR---#
 muPrior <- function(mu, K, mu0, P0) {
   # prior for mu parameters (base model)
   # mu: vector of K unique parameter values
@@ -70,10 +78,44 @@ muPrior <- function(mu, K, mu0, P0) {
   return(loglike)
 }#END: muPrior
 
+muPrior <- cmpfun(muPrior)
+
+#---RANDOM DRAW FROM PRIOR---#
+muRand <- function(mu0, P0) {
+  # generates random value from the prior for mu
+  value = rnorm(n = 1, mean = mu0, sd = P0)
+  return(value)
+}#END: muRand
+
+#---PROPOSAL---#
+muProposal <- function(xt) {
+  # random walk (symmetric) proposal
+  window = 0.1
+  
+  r.cand = runif(1, min = xt - window, max = xt + window)
+  r.cand = ifelse((r.cand >= 0) & (r.cand <= 1), r.cand, 
+                  ifelse(r.cand < 0, 1 + r.cand, 
+                         ifelse(r.cand > 1,  r.cand - 1, cat("error"))))
+  
+  # they will be the same, proposal is symmetrical
+  d.cand = dunif(r.cand, min = xt - window, max = xt + window, log = T)
+  d.curr = dunif(xt, min = xt - window, max = xt + window, log = T)
+  
+  return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
+}
+
+muProposal <- cmpfun(muProposal)
+
+###########
+###########
+##---Z---##
+###########
+###########
+
+#---PRIOR---#
 zPrior <- function(z, K, N, mu, mu0, P0, alpha) {
   # prior for cluster assignments
   # @return: loglikelihood of an assignmnent z
-  # TODO: likelihood for mu
   counts = matrix(NA, ncol = K, dimnames = list(NULL, c(1 : K) ) )
   theTable <- table(z)
   
@@ -105,14 +147,9 @@ zPrior <- function(z, K, N, mu, mu0, P0, alpha) {
 
 zPrior <- cmpfun(zPrior)
 
-# zPrior(z = c(1, 2, 3), K = 3, N = 3, alpha = 1.0 )
-# -log(6)
-
-################
 #---PROPOSAL---#
-################
-zProposal <- function(z, K, N, mu, P, alpha) {
-  # random walk (symmetric) proposal
+zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
+  # random walk (symmetric) integer proposal
   index = sample( c(1 : N), 1)
   value = sample( c(1 : K), 1 )
   
@@ -126,7 +163,7 @@ zProposal <- function(z, K, N, mu, P, alpha) {
   return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
 }# END: proposal
 
-zProposal <- function(z, K, N, mu, P, alpha) {
+zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
   # gibbs proposal (algorithm 2 from Neal 2000)
   r.cand = z
   for(index in 1 : N) {
@@ -150,10 +187,10 @@ zProposal <- function(z, K, N, mu, P, alpha) {
         # likelihood for unrepresented class: / P(x[index] | mu[i]) * P(mu[i]) dm[i]
         # M-H for poor people:
         
-        # sample from prior for mu[i]
-        mu.cand = rnorm(1, mu[i], P)
-        # TODO: this should be the base model likelihood (prior for mu)
-        like = dnorm( mu.cand, mu[i], P, log = T) 
+        # sample from prior for mu (base model)
+        mu.cand = muRand(mu0, P0)
+        # TODO: call loglike implem for single obs
+        like = dnorm( x[index], mu.cand, P, log = T) 
         
         probs[i] = log( (alpha) / (N - 1 + alpha) ) + like
         
@@ -211,7 +248,7 @@ metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue,
   chain[1, ] = startvalue
   for (i in 1 : (Nsim - 1)) {
     
-    candidate = zProposal(z = chain[i, ], K, N, mu, P, alpha)
+    candidate = zProposal(z = chain[i, ], K, N, mu, P,  mu0, P0, alpha)
     
     r.candidate = candidate$r.cand
     d.candidate = candidate$d.cand
@@ -246,8 +283,8 @@ run <- function() {
   z     <- rep(1, N)
   K     <- 2
   mu    <- c(-4, 2)
-  mu0   <- 0.0 
-  P0    <- 1.0
+  mu0   <- mean(x) 
+  P0    <- sd(x)
   
   chain = metropolisHastings(loglikelihood, prior, proposal, data = x, startvalue = z, mu, P, mu0, P0, alpha, Nsim)
   
