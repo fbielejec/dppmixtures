@@ -39,6 +39,13 @@ x <- c(3.2021219417081, 2.65741884298405, 0.780137036066781, 3.64724723765017,
 ##################
 #---LIKELIHOOD---#
 ##################
+
+# dnorm( x[index], mu.cand, P, log = T) 
+
+partialLoglike <- function(x, index, ) {
+
+}
+
 loglikelihood <- function(mu, z, P, data) {
   # mu - vector with K unique mean values
   # z - vector with N cluster assignments
@@ -93,9 +100,9 @@ muProposal <- function(xt) {
   window = 0.1
   
   r.cand = runif(1, min = xt - window, max = xt + window)
-  r.cand = ifelse((r.cand >= 0) & (r.cand <= 1), r.cand, 
-                  ifelse(r.cand < 0, 1 + r.cand, 
-                         ifelse(r.cand > 1,  r.cand - 1, cat("error"))))
+#   r.cand = ifelse((r.cand >= 0) & (r.cand <= 1), r.cand, 
+#                   ifelse(r.cand < 0, 1 + r.cand, 
+#                          ifelse(r.cand > 1,  r.cand - 1, cat("error"))))
   
   # they will be the same, proposal is symmetrical
   d.cand = dunif(r.cand, min = xt - window, max = xt + window, log = T)
