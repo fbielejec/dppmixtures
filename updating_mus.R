@@ -324,3 +324,4 @@ kmeans(x, centers = c(-4, 1, 5))$cluster
 
 means
 probs
+
