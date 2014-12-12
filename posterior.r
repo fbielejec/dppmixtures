@@ -42,7 +42,7 @@ x <- c(3.2021219417081, 2.65741884298405, 0.780137036066781, 3.64724723765017,
 
 # dnorm( x[index], mu.cand, P, log = T) 
 
-partialLoglike <- function(x, index, ) {
+partialLoglike <- function(x, index ) {
 
 }
 
@@ -188,18 +188,22 @@ zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
     
     probs = matrix(NA, ncol = K, dimnames = list(NULL, c(1 : K) ) )
     for(i in 1 : K) {
+
+      # TODO: call loglike implem for single obs
       
       if(occupancy[i] == 0) {# draw new
         
         # likelihood for unrepresented class: / P(x[index] | mu[i]) * P(mu[i]) dm[i]
-        # M-H for poor people:
+        # M-H for poor people:  sample from prior for mu (base model), evaluate at likelihood
         
-        # sample from prior for mu (base model)
-        mu.cand = muRand(mu0, P0)
-        # TODO: call loglike implem for single obs
-        like = dnorm( x[index], mu.cand, P, log = T) 
+        M = 1
+        like = 0
+        for(m in 1 : M) {
+          mu.cand = muRand(mu0, P0)
+          like = like + dnorm( x[index], mu.cand, P, log = T) 
+        }
         
-        probs[i] = log( (alpha) / (N - 1 + alpha) ) + like
+        probs[i] = log( (alpha) / (N - 1 + alpha) ) + like / M
         
       } else {# draw existing
         
@@ -280,14 +284,13 @@ metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue,
 metropolisHastings <- cmpfun(metropolisHastings)
 
 
-num.mode <- function(x){
-  as.numeric(names(which(table(x)==max(table(x)))))
-}
-
-
 ############
 #---MCMC---#
 ############
+num.mode <- function(x) {
+  as.numeric(names(which(table(x) == max(table(x)))))
+}
+
 run <- function() {
   Nsim  <- 10^3
   N     <- length(x)
@@ -324,5 +327,6 @@ run <- function() {
   
   assign("probs", value = probs, env = .GlobalEnv)
 }
+
 run()
 kmeans(x, centers = c(-4, 2))$cluster
