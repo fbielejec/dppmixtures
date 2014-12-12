@@ -42,8 +42,8 @@ x <- c(3.2021219417081, 2.65741884298405, 0.780137036066781, 3.64724723765017,
 
 # dnorm( x[index], mu.cand, P, log = T) 
 
-partialLoglike <- function(x, index ) {
-
+partialLoglike <- function(x, mu, P) {
+  return(dnorm( x, mean = mu, sd = P, log = T))
 }
 
 loglikelihood <- function(mu, z, P, data) {
@@ -55,7 +55,7 @@ loglikelihood <- function(mu, z, P, data) {
   for(i in 1 : length(data)) {
     xi = data[i]
     mui = mu[z[i]]
-    logL = logL + dnorm(x = xi, mean = mui, sd = P, log = TRUE )
+    logL = logL + partialLoglike(xi, mui, P) #dnorm(x = xi, mean = mui, sd = P, log = TRUE )
   }
   
   return(logL )
@@ -95,18 +95,33 @@ muRand <- function(mu0, P0) {
 }#END: muRand
 
 #---PROPOSAL---#
-muProposal <- function(xt) {
+muProposal <- function(xt, operate) {
+  #TODO: remove
+  #   xt = muchain[i, ]
+  
   # random walk (symmetric) proposal
   window = 0.1
+  K = length(xt)
+  r.cand = rep(NA, K)
+  d.cand = rep(NA, K)
+  d.curr = rep(NA, K)
   
-  r.cand = runif(1, min = xt - window, max = xt + window)
-#   r.cand = ifelse((r.cand >= 0) & (r.cand <= 1), r.cand, 
-#                   ifelse(r.cand < 0, 1 + r.cand, 
-#                          ifelse(r.cand > 1,  r.cand - 1, cat("error"))))
-  
-  # they will be the same, proposal is symmetrical
-  d.cand = dunif(r.cand, min = xt - window, max = xt + window, log = T)
-  d.curr = dunif(xt, min = xt - window, max = xt + window, log = T)
+  for(i in 1 : K) {
+    
+    if(operate) {
+      
+      r.cand[i] = runif(1, min = xt[i] - window, max = xt[i] + window)
+      # they will be the same, proposal is symmetrical
+      d.cand[i] = dunif(r.cand[i], min = xt[i] - window, max = xt[i] + window, log = T)
+      d.curr[i] = dunif(xt[i], min = xt[i] - window, max = xt[i] + window, log = T)
+      
+    } else {
+      r.cand[i] = xt[i]
+      d.cand[i] = 0
+      d.curr[i] = 0
+    }
+    
+  }#END: i loop
   
   return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
 }
@@ -189,8 +204,6 @@ zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
     probs = matrix(NA, ncol = K, dimnames = list(NULL, c(1 : K) ) )
     for(i in 1 : K) {
 
-      # TODO: call loglike implem for single obs
-      
       if(occupancy[i] == 0) {# draw new
         
         # likelihood for unrepresented class: / P(x[index] | mu[i]) * P(mu[i]) dm[i]
@@ -200,7 +213,7 @@ zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
         like = 0
         for(m in 1 : M) {
           mu.cand = muRand(mu0, P0)
-          like = like + dnorm( x[index], mu.cand, P, log = T) 
+          like = like + partialLoglike( x[index], mu.cand, P ) 
         }
         
         probs[i] = log( (alpha) / (N - 1 + alpha) ) + like / M
@@ -250,35 +263,55 @@ zProposal <- cmpfun(zProposal)
 ###############
 #---SAMPLER---#
 ###############
-metropolisHastings <- function(loglikelihood, prior, proposal, data, startvalue, mu, P, mu0, P0, alpha, Nsim) {
+metropolisHastings <- function(loglikelihood, prior, proposal, data, zstartvalue, mustartvalue, P, mu0, P0, alpha, Nsim) {
   
-  N <- length(startvalue)
-  K <- length(mu)
+  N <- length(zstartvalue)
+  K <- length(mustartvalue)
   
-  chain = array(dim = c(Nsim, N))
-  chain[1, ] = startvalue
+  muchain = array(dim = c(Nsim, K))
+  muchain[1, ] = mustartvalue
+  
+  zchain = array(dim = c(Nsim, N))
+  zchain[1, ] = zstartvalue
   for (i in 1 : (Nsim - 1)) {
     
-    candidate = zProposal(z = chain[i, ], K, N, mu, P,  mu0, P0, alpha)
     
-    r.candidate = candidate$r.cand
-    d.candidate = candidate$d.cand
-    d.curr = candidate$d.curr
+    zcandidate = zProposal(z = zchain[i, ], K, N, mu = muchain[i, ], P,  mu0, P0, alpha)
+    r.zcandidate = zcandidate$r.cand
+    d.zcandidate = zcandidate$d.cand
+    d.zcurr = zcandidate$d.curr
+    
+    mucandidate = muProposal(muchain[i, ], operate = TRUE) 
+    
+    r.mucandidate = mucandidate$r.cand
+    d.mucandidate = sum(mucandidate$d.cand)
+    d.mucurr = sum(mucandidate$d.curr)
     
     probab = exp(
-      (loglikelihood(mu = mu, z = r.candidate, P = P, data) + zPrior(r.candidate, K, N, mu, mu0, P0, alpha) + d.candidate) -
-        (loglikelihood(mu = mu, z = chain[i, ], P = P, data) + zPrior(chain[i, ], K, N, mu, mu0, P0, alpha) + d.curr)
+      
+      ( loglikelihood(mu = r.mucandidate, z = r.zcandidate, P = P, data) + 
+          zPrior(r.zcandidate, K, N, r.mucandidate, mu0, P0, alpha) + d.zcandidate + 
+          muPrior(r.mucandidate, K, mu0, P0) + d.mucandidate
+      ) -
+        
+        ( loglikelihood(mu = muchain[i, ], z = zchain[i, ], P = P, data) + 
+            zPrior(zchain[i, ], K, N, muchain[i, ], mu0, P0, alpha) + d.zcurr + 
+            muPrior(muchain[i, ], K, mu0, P0) + d.mucurr
+        )
+      
     )
     
     if (runif(1) < probab) {
-      chain[i + 1, ] = r.candidate
+      zchain[i + 1, ] = r.zcandidate
+      muchain[i + 1, ] = r.mucandidate
     } else {
-      chain[i + 1, ] = chain[i, ]
+      zchain[i + 1, ] = zchain[i, ]
+      muchain[i + 1, ] = muchain[i, ]
     }#END: accept check
     
   }#END: iterations loop
   
-  return(chain)
+  return(list(zchain = zchain, muchain = muchain))
 }#END: metropolisHastings
 
 metropolisHastings <- cmpfun(metropolisHastings)
@@ -291,8 +324,18 @@ num.mode <- function(x) {
   as.numeric(names(which(table(x) == max(table(x)))))
 }
 
+CI <- function (x, ci = 0.95) {
+  a = mean(x)
+  s = sd(x)
+  n = length(x)
+  error = qt(ci + (1 - ci)/2, df = n - 1) * s/sqrt(n)
+  
+  return(c(upper = a + error, mean = a, lower = a - error))
+}
+
 run <- function() {
-  Nsim  <- 10^3
+  
+  Nsim  <-  10^3
   N     <- length(x)
   P     <- 1
   alpha <- 0.01
@@ -302,31 +345,37 @@ run <- function() {
   mu0   <- mean(x) 
   P0    <- sd(x)
   
-  chain = metropolisHastings(loglikelihood, prior, proposal, data = x, startvalue = z, mu, P, mu0, P0, alpha, Nsim)
+  chain = metropolisHastings(loglikelihood, prior, proposal, data = x, zstartvalue = z, mustartvalue = mu, P, mu0, P0, alpha, Nsim)
   
-  z = chain[dim(chain)[1], ]
+  muchain = chain$muchain
+  zchain = chain$zchain
   
-  probs = rep(NA, length(mu))
-  for(i in 1 : length(probs)) {
-    probs[i] = sum(z == i) / N
+  ### getting the posterior past burnin
+  burnin <- 200
+  postMode = apply(zchain[burnin : Nsim, ], 2, num.mode)
+  postMean = apply(muchain[burnin : Nsim, ], 2, mean)
+  
+  probs = rep(NA, length(postMean))
+  for(i in 1 : K) {
+    probs[i] = sum(postMode == i) / N
   }
   
   grid = seq(min(x) - 1, max(x) + 1, length = 500)
   dens = rep(NA, length = length(grid))
   
   for(i in 1 : length(grid)) {
-    dens[i] = sum(probs * dnorm(grid[i], mu, P))
+    dens[i] = sum(probs * dnorm(grid[i], postMean, P))
   }
-  
-  ### getting the posterior mode of assigments
-  burnin <- 200
-  print(apply(chain[burnin:Nsim,], 2, num.mode))
   
   hist(x, freq = FALSE)
   lines(grid, dens, col = 'red', lwd = 2)
   
-  assign("probs", value = probs, env = .GlobalEnv)
+  print(postMode)
+  print(kmeans(x, centers = c(-4, 2))$cluster)
+  
+  for(i in 1 : K) {
+    print(CI(muchain[burnin : Nsim, i], ci = 0.95))
+  }
 }
 
 run()
-kmeans(x, centers = c(-4, 2))$cluster
