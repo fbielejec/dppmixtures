@@ -40,8 +40,6 @@ x <- c(3.2021219417081, 2.65741884298405, 0.780137036066781, 3.64724723765017,
 #---LIKELIHOOD---#
 ##################
 
-# dnorm( x[index], mu.cand, P, log = T) 
-
 partialLoglike <- function(x, mu, P) {
   return(dnorm( x, mean = mu, sd = P, log = T))
 }
@@ -62,7 +60,6 @@ loglikelihood <- function(mu, z, P, data) {
 }#END: loglikelihood
 
 loglikelihood <- cmpfun(loglikelihood)
-
 
 ############
 ############
@@ -96,9 +93,6 @@ muRand <- function(mu0, P0) {
 
 #---PROPOSAL---#
 muProposal <- function(xt, operate) {
-  #TODO: remove
-  #   xt = muchain[i, ]
-  
   # random walk (symmetric) proposal
   window = 0.1
   K = length(xt)
@@ -124,7 +118,7 @@ muProposal <- function(xt, operate) {
   }#END: i loop
   
   return(list(r.cand = r.cand, d.cand = d.cand, d.curr = d.curr))
-}
+}#END: muProposal
 
 muProposal <- cmpfun(muProposal)
 
@@ -203,7 +197,7 @@ zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
     
     probs = matrix(NA, ncol = K, dimnames = list(NULL, c(1 : K) ) )
     for(i in 1 : K) {
-
+      
       if(occupancy[i] == 0) {# draw new
         
         # likelihood for unrepresented class: / P(x[index] | mu[i]) * P(mu[i]) dm[i]
@@ -229,22 +223,22 @@ zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
     }#END: i loop
     
     # rescale to improve accuracy
-#     max = max(probs)
-#     for(i in 1 : K) {
-#       probs[i] = probs[i] - max
-#     }
-#     
-#     # normalize probs (b in Neal 2000)
-#     norm = 0;
-#     for(i in 1 : K) {
-#       norm = norm + probs[i]^2
-#     }
-#     norm = sqrt( norm )
-#     
-#     for(i in 1 : K) {
-#       probs[i] = probs[i] / norm 
-#     }
-#     
+    #     max = max(probs)
+    #     for(i in 1 : K) {
+    #       probs[i] = probs[i] - max
+    #     }
+    #     
+    #     # normalize probs (b in Neal 2000)
+    #     norm = 0;
+    #     for(i in 1 : K) {
+    #       norm = norm + probs[i]^2
+    #     }
+    #     norm = sqrt( norm )
+    #     
+    #     for(i in 1 : K) {
+    #       probs[i] = probs[i] / norm 
+    #     }
+    #     
     probs = exp(probs)
     
     value = sample(c(1 : K), size = 1, prob = probs)
@@ -274,7 +268,6 @@ metropolisHastings <- function(loglikelihood, prior, proposal, data, zstartvalue
   zchain = array(dim = c(Nsim, N))
   zchain[1, ] = zstartvalue
   for (i in 1 : (Nsim - 1)) {
-    
     
     zcandidate = zProposal(z = zchain[i, ], K, N, mu = muchain[i, ], P,  mu0, P0, alpha)
     r.zcandidate = zcandidate$r.cand
@@ -375,7 +368,7 @@ run <- function() {
   
   for(i in 1 : K) {
     print(CI(muchain[burnin : Nsim, i], ci = 0.95))
-  }
-}
+  }#END: i loop
+}#END: run
 
 run()
