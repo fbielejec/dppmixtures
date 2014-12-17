@@ -2,11 +2,30 @@
 # zPrior(z = c(1, 2, 3), K = 3, N = 3, alpha = 1.0 )
 # -log(6)
 
+
+# xi = -4
+# mi = -0.860771
+# sdi = 3.126541 
+# 
+# prec = sqrt(1/sdi)
+# 
+# dnorm(xi, mean = mi, sd = sdi, log = TRUE)
+
+# dnorm(xi, mean = mi, sd = sdi, log = TRUE)
+
+# logdmvnorm(xi, mu = mi, sigma = sdi)
+
+# a = 1.0 / (sqrt(2.0 * pi) * sdi);
+# b = -(xi - mi) * (xi - mi) / (2.0 * sdi * sdi);
+# log(a) + b;
+
 ################
 #---PACKAGES---#
 ################
 require(compiler)
 # require(mixtools)
+
+DEBUG <- FALSE
 
 ############
 #---DATA---#
@@ -75,7 +94,7 @@ muPrior <- function(mu, K, mu0, P0) {
   loglike = 0
   for(i in 1 : K) {
     
-    loglike = loglike + dnorm(mu[i], mu0, P0)
+    loglike = loglike + dnorm(mu[i], mu0, P0, log = TRUE)
     
   }#END: i loop
   
@@ -202,21 +221,45 @@ zProposal <- function(z, K, N, mu, P, mu0, P0, alpha) {
         
         # likelihood for unrepresented class: / P(x[index] | mu[i]) * P(mu[i]) dm[i]
         # M-H for poor people:  sample from prior for mu (base model), evaluate at likelihood
+        # TODO: loop over all existing mus?
         
-        M = 1
         like = 0
+        M = 1
         for(m in 1 : M) {
-          mu.cand = muRand(mu0, P0)
+          mu.cand = muRand(mu0, P0);#-2.6
           like = like + partialLoglike( x[index], mu.cand, P ) 
         }
         
-        probs[i] = log( (alpha) / (N - 1 + alpha) ) + like / M
+        like = like / M
+        prob = ((alpha) / (N - 1 + alpha));
+        probs[i] = log( prob ) + like
+        
+        if(DEBUG) {
+#           cat(paste("probability for new:", prob, "\n"));
+          cat(paste("data:", x[index], "\n"));
+          cat(paste("mu candidate:", mu.cand, "\n"));
+          cat(paste("stdev:", P, "\n"));
+          cat(paste("loglikelihood for new:", like, "\n"));
+          cat("\n")
+#           cat(paste("logprobability", probs[i], "\n\n"));
+        }
         
       } else {# draw existing
         
         # likelihood for components with observations other than x_i currently associated with them is N(mu_j, P)
-        like = dnorm( x[index], mu[i], P, log = T) 
-        probs[i] = ( (occupancy[i]) / (N - 1 + alpha) ) + like
+        like = partialLoglike( x[index], mu[i], P )
+        prob =  ((occupancy[i]) / (N - 1 + alpha))
+        probs[i] = log( prob ) + like
+        
+        if(DEBUG) {
+#           cat(paste("probability for existing:", prob, "\n"));
+          cat(paste("data:", x[index], "\n"));
+          cat(paste("mu[i]:", mu[i], "\n"));
+          cat(paste("stdev:", P, "\n"));
+          cat(paste("loglikelihood for existing:", like, "\n"));
+          cat("\n")
+#           cat(paste("logprobability", probs[i], "\n\n"));
+        }
         
       }#END: occupation check
       
@@ -369,6 +412,7 @@ run <- function() {
   for(i in 1 : K) {
     print(CI(muchain[burnin : Nsim, i], ci = 0.95))
   }#END: i loop
+  
 }#END: run
 
 run()

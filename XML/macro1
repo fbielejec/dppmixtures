@@ -1,0 +1,17 @@
+<normalDistributionModel id="dm82">
+   <mean>
+       <maskedParameter id="mu82"	from="82"	to="82">
+         <parameter idref="allRealizedValues"/>
+      </maskedParameter>
+   </mean>
+   <precision><parameter idref="P"/></precision>
+</normalDistributionModel>
+
+<distributionLikelihood id="dl82">
+   <distribution>
+      <normalDistributionModel idref="dm82"/>
+   </distribution>
+   <data>
+      <parameter value="-4.56182609476879"/>
+   </data>
+</distributionLikelihood>

@@ -1,0 +1,157 @@
+#!/bin/bash
+
+###############################
+#---CONSTANTS FOR FUNCTIONS---#
+###############################
+CLOSE_TAG='\/\>'
+OPEN_TAG='>'
+
+#################
+#---FUNCTIONS---#
+#################
+
+function insertAfter {
+  
+  # FILE LINE INSERT_FILE
+  
+  local FILE="$1" LINE="$2" INSERT_FILE="$3"
+  sed -i ''$LINE'r '$INSERT_FILE'' $FILE
+  
+}
+
+function replaceString {
+  
+  # $1 - file name
+  # $2 - line number
+  # $3 - string to replace
+  # $4 - string replacing
+  # $5 - tag to use
+  
+  # in line number $2 replace $3 with $4/>
+  sed -i ''$2's/'$3'.*/'$4''$5'/g' -i $1
+  
+} #END: replaceString
+
+############################
+#---CONSTANTS FOR SCRIPT---#
+############################
+
+NEWLINE='\n'
+TAB="\t"
+
+VERBOSE=true
+
+MACRO1=macro1
+DATA_PART=data.xml
+
+MACRO2=macro2
+LIKELIHOOD_PART=likelihood.xml
+
+MCMC_XML=mcmc.xml
+
+#DATA=(9172 9350 9483 9558 9775 10227 10406 16084 16170 18419 18552 18600 18927 19052
+#  19070 19330 19343 19349 19440 19473 19529 19541 19547 19663 19846 19856 19863
+#  19914 19918 19973 19989 20166 20175 20179 20196 20215 20221 20415 20629 20795
+#  20821 20846 20875 20986 21137 21492 21701 21814 21921 21960 22185 22209 22242
+#  22249 22314 22374 22495 22746 22747 22888 22914 23206 23241 23263 23484 23538
+#  23542 23666 23706 23711 24129 24285 24289 24368 24717 24990 25633 26960 26995
+#   32065 32789 34279)
+
+DATA=(3.2021219417081 2.65741884298405 0.780137036066781 3.64724723765017 
+       2.81041331245526 -4.62984071052694 -3.14281370657829 -3.12319766617262 
+       0.908978440112633 2.51957106216094 1.6829613082298 -3.87567468005131 
+       0.945705446404869 0.495428223641111 -3.70222557688605 3.68414040371748 
+       1.71340601895164 1.14251338854263 -4.67625135117806 -4.36161079110522 
+       2.5622235140633 2.06378756223698 -6.05965795191174 2.03357186159356 
+       1.85332992519105 -2.90292806264 -2.3872030054047 2.97532564926973 
+       1.36038670563403 2.03484398255987 -2.90544404614717 1.94541101948915 
+       1.89877326620243 -4.58947787551057 -5.23332969425005 1.35028279895402 
+       -5.7057364084379 -4.19795250440479 0.169765958342949 -4.41040237770636 
+       3.23366242337812 2.7355634096666 -3.79124850215067 1.81625386149323 
+       1.1244817398166 -5.351603849814 -4.28238069609014 2.81686670597407 
+       -3.41167847159064 2.2695834486729 -4.33355486366414 -4.07156878219267 
+       0.66540681953474 1.54438714296735 -6.69483940993138 -3.33693275965261 
+       -1.79182385472336 2.57088565077193 1.36080493186315 2.47510953571402 
+       2.21485345997249 -3.14067593928145 -5.09841477435681 0.995868098296324 
+       0.780575051090966 -4.78524027264247 -5.00218879969458 -3.31819478384048 
+       -3.22225921308094 2.90755400556924 -4.5340589955408 -3.17250220599487 
+       1.3692421554455 0.471461424865359 2.21459894893125 -2.10032867323119 
+       -3.94392608719873 -3.96057630155318 -3.71448565584273 0.730529435675807 
+       2.20540388616452 -4.56182609476879)
+
+
+##############
+#---SCRIPT---#
+##############
+
+if [ $VERBOSE = true ]; then
+  echo "Expanding macros..."
+fi
+
+j=1
+for i in "${DATA[@]}"; do
+  
+  DATA_ELEMENT=$i #$(echo "scale=7; $i/1000" | bc)
+  
+  # in line number 1 replace everything after 'id=' with 'id="dm$j">'
+  replaceString $MACRO1 1 'id=' 'id="dm'$j'"' $OPEN_TAG
+  
+  # in line number 3 replace everything after 'id=' with 'id="mu$j"/>'
+  replaceString $MACRO1 3 'id=' 'id="mu'$j'"' $OPEN_TAG
+  
+  FROM=$j
+  TO=$j
+  
+  # in line number 3 replace everything after id="mu$j" with from="1" to="1"/>'
+  replaceString $MACRO1 3 'id="mu'$j'"' 'id="mu'$j'"'''$TAB'from="'$FROM'"'$TAB'to="'$TO'"' $OPEN_TAG
+  
+  # in line number 10 replace everything after 'id=' with 'id="dm$j"/>'
+  replaceString $MACRO1 10 'id=' 'id="dl'$j'"' $OPEN_TAG
+  
+  # in line number 12 replace everything after 'idref=' with 'idref="mu$i"/>'
+  replaceString $MACRO1 12 'idref=' 'idref="dm'$j'"' $CLOSE_TAG
+  
+  # in line number 15 replace everything after 'value=' with 'value="$i"/>'
+  replaceString $MACRO1 15 'value=' 'value="'$DATA_ELEMENT'"' $CLOSE_TAG
+  
+  # expand macro
+  cat $MACRO1 >> $DATA_PART
+  echo -e $NEWLINE >> $DATA_PART
+  
+  replaceString $MACRO2 1 'idref=' 'idref="dl'$j'"' $CLOSE_TAG
+  
+  # expand macro
+  cat $MACRO2 >> $LIKELIHOOD_PART
+  #echo -e $NEWLINE >> $LIKELIHOOD_PART
+  
+  let j=j+1
+  
+done # END: i loop
+
+# create XML
+if [ $VERBOSE = true ]; then
+  echo "Creating XML..."
+fi
+
+cat first_part.xml $DATA_PART last_part.xml > $MCMC_XML
+
+LINE=$( grep -rne '<likelihood id="likelihood">' $MCMC_XML | grep -oE "[[:digit:]]{1,}")
+#let LINE=LINE+1
+
+if [ $VERBOSE = true ]; then
+  echo "Inserting likelihood elements in line $LINE..."
+fi
+
+insertAfter $MCMC_XML $LINE $LIKELIHOOD_PART
+
+# clean up
+if [ $VERBOSE = true ]; then
+  echo "Cleaning up..."
+fi
+
+rm $DATA_PART $LIKELIHOOD_PART
+
+echo "Done."
+
+exit $?
+

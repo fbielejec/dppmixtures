@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- test the dirichlet process prior on Galaxy data -->
+<beast>
+
+<parameter id="mu" value="0.0" />
+
+<parameter id="P" value="1.0" />
+<parameter id="d" value="42" />  
+
+<ratioParameter id="PW">
+    <parameter1>
+        <parameter idref="P"/>
+    </parameter1>
+    <parameter2>
+        <parameter idref="d"/>
+    </parameter2>
+</ratioParameter>
+
+<!--
+
+<parameter id="mu" value="0.0" />
+<parameter id="P" value="1.0" />
+<parameter id="d" value="0.02380952" />  
+
+<productParameter id="PW">
+    <parameter idref="P"/>
+    <parameter idref="d"/>
+</productParameter>
+
+-->
+
+ <parameter id="gamma" value="3.0" />
+
+ <multivariateNormalDistributionModel id="baseModel">
+      <meanParameter>
+         <parameter idref="mu" />
+      </meanParameter>
+      <precisionParameter>
+         <matrixParameter>
+           		<parameter idref="PW"/>
+         </matrixParameter>
+      </precisionParameter>
+   </multivariateNormalDistributionModel>
+
+   <compoundParameter id="uniquelyRealizedParameters">
+      <parameter id="uniqueMu0" value="20.0" />
+      <parameter id="uniqueMu1" value="20.1" />
+      <parameter id="uniqueMu2" value="20.2" />
+      <parameter id="uniqueMu3" value="20.3" />
+      <parameter id="uniqueMu4" value="20.4" />
+      <parameter id="uniqueMu5" value="20.5" />
+      <parameter id="uniqueMu6" value="20.6" />
+      <parameter id="uniqueMu7" value="20.7" />
+      <parameter id="uniqueMu8" value="20.8" />
+      <parameter id="uniqueMu9" value="20.9" />
+   </compoundParameter>
+
+   <dirichletProcessPrior id="dpp">
+
+      <!-- start all assignments in cluster "value" -->
+      <categories>
+         <parameter id="z" value="0" dimension="82" lower="0" upper="9" />
+      </categories>
+
+      <compoundParameter idref="uniquelyRealizedParameters" />
+
+      <baseModel>
+         <multivariateNormalDistributionModel idref="baseModel" />
+      </baseModel>
+
+      <concentration>
+          <parameter idref="gamma"/>
+      </concentration>
+
+   </dirichletProcessPrior>
+
+   <countableRealizationsParameter id="allRealizedValues">
+      <categories>
+         <parameter idref="z" />
+      </categories>
+      <compoundParameter idref="uniquelyRealizedParameters" />
+   </countableRealizationsParameter>
+
+   <!-- START: DATA -->
+
