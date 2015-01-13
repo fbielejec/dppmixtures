@@ -1,4 +1,6 @@
 
+#tenjemoj
+
 # zPrior(z = c(1, 2, 3), K = 3, N = 3, alpha = 1.0 )
 # -log(6)
 

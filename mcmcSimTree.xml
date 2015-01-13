@@ -1,0 +1,212 @@
+<?xml version="1.0" standalone="yes"?>
+<!-- Tests the tree likelihood -->
+
+<beast>
+
+	<!-- The list of taxa analyse (can also include dates/ages).                 -->
+	<!-- ntax=3                                                                  -->
+	<taxa id="taxa1">
+		<taxon id="SimSeq1">
+		<date value="1994" direction="forwards" units="years"/>
+		</taxon>
+		
+		<taxon id="SimSeq2">
+		<date value="1964" direction="forwards" units="years"/>
+		</taxon>
+		
+		<taxon id="SimSeq3">
+		<date value="1984" direction="forwards" units="years"/>
+		</taxon>
+	</taxa>
+
+	<!-- The sequence alignment (each sequence refers to a taxon above).         -->
+	<alignment id="alignment" dataType="nucleotide">
+	
+		<sequence>
+			<taxon idref="SimSeq1"/>
+			TCAAGTGAGGTACACACGATTCATAAGATACCGAGAGGGACGTGGGATCATGTCCGTTGGAGGCATGCTCAACTGGCGTAAGTGGTAAACTGGATGTCTCTAGTAGTGGGCAAGCGTCGTGAGGCGCAAAAGTACTTGTGGTAAGGACCAGAGATGCACAGGCTATCTTCTTTAATCTAATGCGATACTCGTTGAAGTCTATCTTTGAGATAGCTAAGATCACATAGGGACTTTGATAGCCAACAGTGTGCATGGCACTGTAATAATTTTTTGGCAGACCACACTTGGGTGGGGAGAGTAGAGAAAGTGAATCGATGAGCAGGTTCCGCGGCTGGGGGGGTTAGGGATATCACAAGATTGTCTCTTAAACACGGGGTTTAGGGTTACTTACAAGAAGATGAATGCCGGAGCAGGGGGTCATCTTAAGGAATCGGGGAATTTGTCCTCGGGCAAGAATTGACACCTGCCTCATTATTATTCATGAGACTACAAAAAGGGGATAGTTGAATTACATTAGCGCGCGGTCGAACTCCGACTGAAAATAATAAGCGTAAATGGAACCCAGCCACAGTGACTGGTAAGCAAATGTTTAGTTTAAACAACCAGGGTAATGGTGCATTTCAGAAACTGGGGACAAGTCGATTACGGCGGTTGATTACCGGGTCCTGTTAGGTGTAGGGAGCCCATCTACTGGCACATTTTTTTGTGCGTATCGACGGGGACCCAGTGAAAAGGAGTAACTGATAAAGTACAGTGAATGAATAATGTAAAAGCGGGACGAGTAAAAGCATACATAGTGCGTGAAAGGTGTCAGTTTACCTACCTGGGACAATCTCTGTACGTGAGTAAGTTTGGATCCAGCGGAAAACCACAGGTGAGAGGGCTTCTGAAACGCATGCCCGATTAGATAACTGATAATGTAAACCAGGACGCTTCAGCTGTGAATGCCTGTATAAAATCCCTGGGTTTTCAGGAATGGAAATAACGCTGACCAGCTATT
+		</sequence>
+		
+		<sequence>
+			<taxon idref="SimSeq2"/>
+			ATAAAAAAGGGGTGCAAAAGAACACGTGCAATTAAAATAAGGCCGGTCGATGTATAAGGTTACATCGCCAGTGAGTTATCTGGATCAATCTTGTTTCTTCTTAGAAAACGAAACATCTAAAGAGTTCATTGAGGAGTATGGCGGAGTTTATGGGATGGTTCTCGATCTTCTGCAGACACGAGAAGCAGCAGCAAAACTATATGATCAAGCGAATGAAGATAAAATTGGGGATTGATCAATGGGGGCTGCATACGGACTTGCACCATAGTAAGCAGCTAACGTGTCATAATAATGGTGATTAGAAGAGTAGGTTAGTGAGAATTAATAATCGGCGGAAATTGGGATTATACCTTATGCTGGCGCCGATAAGAGGTAATGAGTGACACAAATAAAGGGTAAATATAATCGGACGGAGCGTAATTCGGAGAGACTAATGGACGGGATGTAAAGTTCACACTAGGACTGTAACTGTTGGAACGTAAGAAAAAATCGAGAAGGAGCAAATGGGGTATAGGATGTACCGCAAGGTCTTACATTAAAAAGACGAAGTGGATGGCGGGTCTGAGTGAACAGGTTGTTCATTTGGGACGATGACCAGGTTATGGAACCAATAAGAAGTTATAGTAGAACAGGATAAATCCACAGAATTTCATCATGAGAGAGTTAAAATGACTATGGCGGCCCTATCTGTGGCAGAGAAACCATTAACTCGCCAGTGAATTCTCCTTGCGAGGCTGGGAGCATCAGCGTGAGACGAACAAAGATTGCATCGGTTAGATAAAACCAGTAATGCGTATCAGACCAAGTGTGTCAAAGAGTTTATTCAGAGGGCGGGACACATGGATCTAAGATCAGCTCGACCGGCGGATTCCAGTTAGTGGAGATATGCGGGGCTCTTATTGAATGGGTCCATCAGTGGTTATGGAGAAATTCGATTAACAGTAATCTTCAGGCGAGATGTGTGATCCTTTCAAACGGACAGAAGCGCGAGGTAAAATCC
+		</sequence>
+		
+		<sequence>
+			<taxon idref="SimSeq3"/>
+			ACAGGGTGCGAACCCGAGAGAATTGATAAAATCCAAATGGGTATGGTGGGTATGAACAAATGAATCATAAATAAATCGTCTGCATCGAGTTTATCCCTCGTTTGATGGCGCGGAGTTCAACAACTTATTGATCAGAAAAGGGAGAATTTGTGAGACCGCAGTTCTCTTCCTACCAGAGCAGAATGCATTGACCAAGCTCCATACGCACACAAACCCCTTTGTGATCGGGAATTGATCACAAAACGTCATACAGGAAGTAGCCTCGTCATCGGCAATCAATAGAAAAAGACCACAAGGAACGGAAGGGAAGTTCAAGGAAGAATAAGAGTAGTAAGGAACGATGTGTATATTGGTAAATTACGGCAACCAGAAGCGATGAGCCGTGCGTTCATAAGACAGACGCTATGGAACGGGGCATGACCTGGAGAGACTAATGATTAGTATATAGAATCCGACCAAGCGTGGTGGCCATTCTAATATGAGGAGACGTTGAGAAAAATGAGCCAGGAAGGGTAGCATGCCAGAAAACTCTATGCAGGAAGTAATTTAGACATATCCCTTCTGGTGCAGTAATTTGCTTATCCAAGACATTGATTCGACTCTGGGGGTCACATGGTGGTCTCATGGAATGACGAGGACTCACCGGACTATACTTGAACATAGGTGAGACAATCATGACGAATTCGCCCAAGGCGGTGCTGTTATTAGTATTGGACCGGTATCGCTGCACAAATTCAAGTAGATCGTTTGGGGGAGGATTAGGGTCACCCGGAATGAGCAATTGCGTGAATAAGAAACCCACTGAACTCGGAAGATTGATAGTTTAGTGGGTCGGATCTGTACGCTCTGGCAGAGCTCAGTTAGGAGACTTCAAAAGGAAGAATCCTACGCTTCGCCTGCGAGGTTAGGCAGATATGGGGAATGAGATGTTTCAGGTGATAATAGCTTGATGACACAAAATTAAGTCATCCCAAATCAGCAGGCAAACAGAGCAGAGCAC 
+		</sequence>
+		
+	</alignment>
+
+	<!-- The unique patterns from 1 to end                                       -->
+	<patterns id="patterns" from="1">
+		<alignment idref="alignment"/>
+	</patterns>
+
+<newick id="treeML" units="years">
+(SimSeq1:73.7468,(SimSeq2:25.256989999999995,SimSeq3:45.256989999999995):18.48981);
+</newick>
+
+	<treeModel id="treeModel">
+		<tree idref="treeML"/>
+		<rootHeight>
+			<parameter id="treeModel.rootHeight"/>
+		</rootHeight>
+		<nodeHeights internalNodes="true">
+			<parameter id="treeModel.internalNodeHeights"/>
+		</nodeHeights>
+		<nodeHeights internalNodes="true" rootNode="true">
+			<parameter id="treeModel.allInternalNodeHeights"/>
+		</nodeHeights>
+	</treeModel>
+
+	  <frequencyModel id="freqModel" dataType="nucleotide">
+                 <frequencies>
+                      <parameter id="frequencies" dimension="4" value="0.25 0.25 0.25 0.25"/>
+                 </frequencies>
+     </frequencyModel>
+
+	<!-- The strict clock (Uniform rates across branches)                        -->
+	<strictClockBranchRates id="branchRates">
+		<rate>
+			<parameter id="clock.rate" value="10E-3" lower="0.0" upper="100.0"/>
+		</rate>
+	</strictClockBranchRates>
+
+<!-- START: DPP -->
+
+<parameter id="mu0" value="0.0" />
+<parameter id="P0" value="1.0"/>  
+<parameter id="gamma" value="0.01" />
+
+<compoundParameter id="uniquelyRealizedParameters">
+    <parameter id="kappa.0" value="1.0" />
+    <parameter id="kappa.1" value="10.0" />
+</compoundParameter>
+
+ <multivariateNormalDistributionModel id="baseModel">
+      <meanParameter>
+         <parameter idref="mu0" />
+      </meanParameter>
+      <precisionParameter>
+         <matrixParameter>
+           		<parameter idref="P0"/>
+         </matrixParameter>
+      </precisionParameter>
+   </multivariateNormalDistributionModel>
+
+   <dirichletProcessPrior id="dpp">
+
+      <!-- start all assignments in cluster "value" -->
+      <categories>
+         <parameter id="uCategories" value="0" dimension="2" lower="0" upper="1" />
+      </categories>
+
+      <compoundParameter idref="uniquelyRealizedParameters" />
+
+      <baseModel>
+         <multivariateNormalDistributionModel idref="baseModel" />
+      </baseModel>
+
+      <concentration>
+          <parameter idref="gamma" />
+      </concentration>
+
+   </dirichletProcessPrior>
+
+<!-- END: DPP -->
+
+      <hkyModel id="hky.0">
+         <frequencies>
+             <frequencyModel idref="freqModel"/>
+         </frequencies>
+         <kappa>
+             <parameter idref="kappa.0"/>
+         </kappa>
+     </hkyModel>
+     
+     <hkyModel id="hky.1">
+         <frequencies>
+             <frequencyModel idref="freqModel"/>
+         </frequencies>
+         <kappa>
+             <parameter idref="kappa.1"/>
+         </kappa>
+     </hkyModel>
+
+    <!-- Branch Specific-->
+	<branchSpecific id="branchSpecific">
+	    <treeModel idref="treeModel"/>
+        <models>
+
+           <hkyModel idref="hky.0"/>
+           <hkyModel idref="hky.1"/>
+            
+        </models>
+        <categories>
+            <parameter idref="uCategories" />
+        </categories>
+        <frequencyModel idref="freqModel"/>
+	</branchSpecific>
+
+
+	<siteModel id="siteModel">
+		<branchSubstitutionModel>
+			<branchSpecific idref="branchSpecific"/>
+		</branchSubstitutionModel>
+	</siteModel>
+
+
+	<treeLikelihood id="likelihood">
+		<patterns idref="patterns"/>
+		<treeModel idref="treeModel"/>
+		<siteModel idref="siteModel"/>
+		<branchSpecific idref="branchSpecific"/>
+        <strictClockBranchRates idref="branchRates"/>
+	</treeLikelihood>
+
+        <!-- Define operators                                                        -->
+	<operators id="operators">
+	
+     <randomWalkOperator windowSize="0.1" weight="3">
+      	<compoundParameter idref="uniquelyRealizedParameters" />
+      </randomWalkOperator>
+
+		<randomWalkIntegerOperator windowSize="1" weight="3">
+			<parameter idref="uCategories"/>
+		</randomWalkIntegerOperator>
+
+	</operators>
+
+	<!-- Define MCMC                                                             -->
+	<mcmc id="mcmc" chainLength="100000" autoOptimize="true">
+		<posterior id="posterior">
+		
+			<prior id="prior">
+
+              <dirichletProcessPrior idref="dpp"/>
+
+			</prior>
+			
+		   <treeLikelihood idref="likelihood"/>
+			
+		</posterior>
+		
+		<operators idref="operators"/>
+
+		<!-- write log to screen                                                     -->
+		<log id="screenLog" logEvery="1">
+
+            <compoundParameter idref="uniquelyRealizedParameters" />
+			
+			<column label="uCategories" sf="6" width="12">
+				<parameter idref="uCategories"/>
+			</column>			
+
+		</log>
+
+	</mcmc>
+	
+</beast>
+
