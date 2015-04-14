@@ -1,0 +1,111 @@
+<?xml version="1.0" standalone="yes"?>
+
+<beast>
+		
+	<taxa id="taxa1">
+
+		<taxon id="SimSeq1">
+			<date value="1994" direction="forwards" units="years"/>
+		</taxon>
+		
+		<taxon id="SimSeq2">
+			<date value="1964" direction="forwards" units="years"/>
+		</taxon>
+		
+		<taxon id="SimSeq3">
+			<date value="1984" direction="forwards" units="years"/>
+		</taxon>
+
+	</taxa>
+	
+<newick id="startingTree" units="years">
+(SimSeq1:73.7468,(SimSeq2:25.256989999999995,SimSeq3:45.256989999999995):18.48981);
+</newick>
+
+	<treeModel id="treeModel">
+		<newick idref="startingTree"/>
+		<rootHeight>
+			<parameter id="treeModel.rootHeight"/>
+		</rootHeight>
+		<nodeHeights internalNodes="true">
+			<parameter id="treeModel.internalNodeHeights"/>
+		</nodeHeights>
+		<nodeHeights internalNodes="true" rootNode="true">
+			<parameter id="treeModel.allInternalNodeHeights"/>
+		</nodeHeights>
+	</treeModel>
+
+<!--	 The strict clock (Uniform rates across branches)    -->                    
+	<strictClockBranchRates id="branchRates">
+		<rate>
+			<parameter id="clock.rate" value="10E-3"/>
+		</rate>
+	</strictClockBranchRates>
+
+     <frequencyModel id="freqModel" dataType="nucleotide">
+        <frequencies>
+            <parameter dimension="4" value="0.25 0.25 0.25 0.25"/>
+        </frequencies>
+     </frequencyModel>
+
+     <hkyModel id="hky.0">
+         <frequencies>
+             <frequencyModel idref="freqModel"/>
+         </frequencies>
+         <kappa>
+             <parameter id="kappa.0" value="5.0"/>
+         </kappa>
+     </hkyModel>
+
+     <hkyModel id="hky.1">
+         <frequencies>
+             <frequencyModel idref="freqModel"/>
+         </frequencies>
+         <kappa>
+             <parameter id="kappa.1" value="10.0"/>
+         </kappa>
+     </hkyModel>
+
+<!-- branch model -->
+     <RandomBranchAssignmentModel id="randomBranchAssignmentModel">
+        <treeModel idref="treeModel"/>
+        <models>
+            <hkyModel idref="hky.0"/>
+            <hkyModel idref="hky.1"/>
+        </models>
+     </RandomBranchAssignmentModel>
+
+	<!-- site model                                                              -->
+	<siteModel id="siteModel">
+		<branchSubstitutionModel>
+			<RandomBranchAssignmentModel idref="randomBranchAssignmentModel"/>
+		</branchSubstitutionModel>
+	</siteModel>
+
+	<branchSpecificTrait id="branchSpecificKappa">  
+	    <treeModel idref="treeModel"/>
+	    <RandomBranchAssignmentModel idref="randomBranchAssignmentModel"/>
+    </branchSpecificTrait>
+
+    <!-- simulate some sequence data under this model -->
+    <beagleSequenceSimulator id="simulator" output="XML">
+    
+    	<partition from="1" to="1000"> 
+	    	<treeModel idref="treeModel"/>
+	    	<RandomBranchAssignmentModel idref="randomBranchAssignmentModel"/>
+	    	<siteModel idref="siteModel"/>
+        	<strictClockBranchRates idref="branchRates"/>
+        	<frequencyModel idref="freqModel"/>
+    	</partition>     
+        
+	</beagleSequenceSimulator>
+
+    <report fileName="sequences.xml">
+        <beagleSequenceSimulator idref="simulator"/>
+    </report>
+
+    <report fileName="annotated_tree.newick">
+        <branchSpecificTrait idref="branchSpecificKappa"/> 
+    </report>
+
+</beast>

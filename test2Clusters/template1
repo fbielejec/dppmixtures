@@ -1,0 +1,13 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=3;
+	Taxlabels
+		SimSeq1
+	SimSeq2
+	SimSeq3
+		;
+End;
+
+Begin trees;
+tree TREE1 = [&R] 
