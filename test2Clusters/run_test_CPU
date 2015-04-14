@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ---README--- #
-# Randomly assigns branches to models and simulates sequence data
+# Randomly assigns branches to models and simulates sequence data under those assignments
 # Inference for 2 clusters of branches
 
 BEAGLE_PATH=$HOME/lib
