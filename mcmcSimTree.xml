@@ -244,12 +244,6 @@
               
               <dirichletProcessPrior idref="dpp"/>
               
-              <!--
-              <logNormalPrior mean="1.0" stdev="2" offset="0.0" meanInRealSpace="true">
-					<compoundParameter idref="uniquelyRealizedParameters" />
-			  </logNormalPrior>
-              -->
-              
 			</prior>
 			
            <beagleBranchLikelihood idref="branchLikelihood"/>

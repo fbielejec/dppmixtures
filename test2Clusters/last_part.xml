@@ -70,12 +70,14 @@
 
    </dirichletProcessPrior>
 
+<!--
    <countableRealizationsParameter id="allRealizedValues">
       <categories>
          <parameter idref="uCategories" />
       </categories>
       <compoundParameter idref="uniquelyRealizedParameters" />
    </countableRealizationsParameter>
+-->
 
 <!-- END: DPP -->
 
@@ -92,9 +94,12 @@
              <frequencyModel idref="freqModel"/>
          </frequencies>
          <kappa>
+          <parameter idref="kappa.0" />
+         <!--
          	<maskedParameter id="k.0"	from="1" to="1">
          		<parameter idref="allRealizedValues"/>
          	</maskedParameter>
+         	-->
          </kappa>
      </hkyModel>
      
@@ -103,9 +108,12 @@
              <frequencyModel idref="freqModel"/>
          </frequencies>
          <kappa>
+           <parameter idref="kappa.1" />
+         <!--
          	<maskedParameter id="k.1"	from="2" to="2">
          		<parameter idref="allRealizedValues"/>
          	</maskedParameter>
+         	-->
          </kappa>
      </hkyModel>
 
