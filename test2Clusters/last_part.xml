@@ -1,3 +1,4 @@
+
 	<!-- The unique patterns from 1 to end                                       -->
 	<!-- npatterns=995                                                           -->
 	<patterns id="patterns" from="1">
@@ -6,7 +7,7 @@
 
 	<!-- fixed tree                                       -->
     <newick id="startingTree">
-		(SimSeq1:73.7468,(SimSeq2:25.256989999999995,SimSeq3:45.256989999999995):18.48981);  
+		((SimSeq1:22.0,SimSeq2:22.0):12.0,(SimSeq3:23.1,SimSeq4:23.1):10.899999999999999); 
     </newick>
 
 	<treeModel id="treeModel">
@@ -55,7 +56,7 @@
 
       <!-- start all assignments in cluster "value" -->
       <categories>
-         <parameter id="uCategories" value="0" dimension="2" lower="0" upper="1" />
+         <parameter id="uCategories" value="1 1 1 1 1 1" lower="0" upper="1" />
       </categories>
 
       <compoundParameter idref="uniquelyRealizedParameters" />
@@ -134,6 +135,7 @@
 	<treeLikelihood id="treeLikelihood.0">
 		<patterns idref="patterns"/>
 		<treeModel idref="treeModel"/>
+		<hkyModel idref="hky.0"/>
 		<siteModel idref="siteModel.0"/>
         <strictClockBranchRates idref="branchRates"/>
 	</treeLikelihood>
@@ -141,6 +143,7 @@
 	<treeLikelihood id="treeLikelihood.1">
 		<patterns idref="patterns"/>
 		<treeModel idref="treeModel"/>
+		<hkyModel idref="hky.1"/>
 		<siteModel idref="siteModel.1"/>
         <strictClockBranchRates idref="branchRates"/>
 	</treeLikelihood>
@@ -184,9 +187,11 @@
       </dpOperator>
 
 	<!--parameters operator -->
+<!--
      <randomWalkOperator windowSize="0.1" weight="3">
       	<compoundParameter idref="uniquelyRealizedParameters" />
       </randomWalkOperator>
+-->
 
 	</operators>
 

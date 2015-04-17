@@ -2,24 +2,28 @@
 
 <beast>
 		
-	<taxa id="taxa1">
+	<taxa id="taxa">
 
 		<taxon id="SimSeq1">
-			<date value="1994" direction="forwards" units="years"/>
+			<date value="2002" direction="forwards" units="years"/>
 		</taxon>
 		
 		<taxon id="SimSeq2">
-			<date value="1964" direction="forwards" units="years"/>
+			<date value="2002" direction="forwards" units="years"/>
 		</taxon>
 		
 		<taxon id="SimSeq3">
-			<date value="1984" direction="forwards" units="years"/>
+			<date value="2002" direction="forwards" units="years"/>
+		</taxon>
+
+		<taxon id="SimSeq4">
+			<date value="2002" direction="forwards" units="years"/>
 		</taxon>
 
 	</taxa>
 	
 <newick id="startingTree" units="years">
-(SimSeq1:73.7468,(SimSeq2:25.256989999999995,SimSeq3:45.256989999999995):18.48981);
+((SimSeq1:22.0,SimSeq2:22.0):12.0,(SimSeq3:23.1,SimSeq4:23.1):10.899999999999999); 
 </newick>
 
 	<treeModel id="treeModel">
@@ -34,6 +38,10 @@
 			<parameter id="treeModel.allInternalNodeHeights"/>
 		</nodeHeights>
 	</treeModel>
+
+    <report>
+        Tree: <tree idref="treeModel"/>
+    </report>
 
 <!--	 The strict clock (Uniform rates across branches)    -->                    
 	<strictClockBranchRates id="branchRates">
@@ -90,7 +98,7 @@
     <!-- simulate some sequence data under this model -->
     <beagleSequenceSimulator id="simulator" output="XML">
     
-    	<partition from="1" to="1000"> 
+    	<partition from="1" to="10000"> 
 	    	<treeModel idref="treeModel"/>
 	    	<RandomBranchAssignmentModel idref="randomBranchAssignmentModel"/>
 	    	<siteModel idref="siteModel"/>

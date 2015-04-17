@@ -7,42 +7,32 @@
 BEAGLE_PATH=$HOME/lib
 BEAST_PATH=/home/filip/Dropbox/JavaProjects/beast-mcmc/build/dist/beast.jar
 
-SEED=123
+#SEED=123
 
 XML1=generate_random_assignments.xml
 
-mkdir results
-
-cd results/
 
 # generate alignment and annotated tree
-java -Djava.library.path=$BEAGLE_PATH -jar $BEAST_PATH -beagle_CPU -beagle_double -beagle_scaling always -seed $SEED -overwrite ../$XML1
-
+#java -Djava.library.path=$BEAGLE_PATH -jar $BEAST_PATH -beagle_CPU -beagle_double -seed $SEED -overwrite ../$XML1
+java -Djava.library.path=$BEAGLE_PATH -jar $BEAST_PATH -beagle_CPU -beagle_double -overwrite $XML1
 
 # change generated tree to NEXUS
-cat ../template1 annotated_tree.newick ../template2 ../template3 > annotated_tree.tree
+cat template1 annotated_tree.newick template2 template3 > annotated_tree.tree
 
 
 # generate xml
-cat ../first_part.xml sequences.xml ../last_part.xml > mcmc.xml
+cat first_part.xml sequences.xml last_part.xml > mcmc.xml
 
 
 # run analysis
 TIC="$(date +%s)"
-java -Djava.library.path=$BEAGLE_PATH -jar $BEAST_PATH -beagle_CPU -beagle_double -beagle_scaling always -seed $SEED -overwrite mcmc.xml
+#java -Djava.library.path=$BEAGLE_PATH -jar $BEAST_PATH -beagle_CPU -beagle_double -beagle_scaling always -seed $SEED -overwrite mcmc.xml
 TOC="$(date +%s)"
 TIME=$(echo "scale=5; ($TOC-$TIC)/3600" | bc)
-        
+
+# clean up
+rm sequences.xml annotated_tree.newick        
 
 echo "Finished in: $TIME h"
-
-
-# analyse results (tree annotator)
-#java -cp $BEAST_PATH dr.app.tools.TreeAnnotator -burnin $BURNIN -target annotated_tree.tree mcmc.trees mcc.tree
-
-        
-# log the resulting mcc tree (add Figtree block)
-#cat mcc.tree ../template3 > annotated_mcc.tree
-
 
 

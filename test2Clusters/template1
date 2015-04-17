@@ -1,12 +1,13 @@
 #NEXUS
 
 Begin taxa;
-	Dimensions ntax=3;
+	Dimensions ntax=4;
 	Taxlabels
 		SimSeq1
-	SimSeq2
-	SimSeq3
-		;
+		SimSeq2
+		SimSeq3
+    	SimSeq4
+			  ;
 End;
 
 Begin trees;
